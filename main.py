@@ -1,5 +1,14 @@
 import pandas as pd
 from functions import get_col_widths
+import os
+
+#################
+# Close excel files
+#################
+try:
+    os.system("taskkill /f /im " + 'EXCEL.exe')
+except:
+    pass
 
 #################
 # Import data
@@ -39,12 +48,12 @@ df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number'
 # Is ok Conditions
 #################
 
-# Condition 1 - Sensor tagname must adhere to the following regex
-regex = r'^[A-z][A-z]\d\d[A-z][A-z]\d\d.*$'
-cond1 = ~ df.sensor_tagname.dropna().str.match(regex, na=False)
+## Condition 1 - Sensor tagname must adhere to the following regex
+# regex = r'^[A-z][A-z]\d\d[A-z][A-z]\d\d.*$'
+# cond1 = ~ df.sensor_tagname.dropna().str.match(regex, na=False)
 
 # Condition 2 - Same כלי with multiple same name sensors
-cond2 = df.duplicated(['op_area_name', 'op_area_number', 'device_kind', 'device_number', 'suffix', 'prefix'], keep=False)
+cond2 = df.duplicated(['op_area_name', 'op_area_number', 'device_kind', 'device_number', 'suffix'], keep=False)
 
 # Condition 3 - Suffixes that show only for one device
 result = df.groupby(["suffix"])["suffix"].count()
@@ -54,7 +63,7 @@ cond3 = df["suffix"].isin(suspicious_suffixes)
 conds = cond2 | cond3
 
 #################
-# Apply masks
+# Apply conditions
 #################
 df["redundent suffix"] = 0
 df["lonly suffix"] = 0
@@ -65,7 +74,7 @@ df["lonly suffix"][cond3] = 1
 df["problem"][conds] = 1
 
 #################
-# Output to file
+# Output to file and format excel
 #################
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
 df.to_excel(writer, index_label='id', sheet_name='Sheet1')
@@ -88,3 +97,9 @@ for i, width in enumerate(get_col_widths(df)):
     worksheet.set_column(i, i, width * 1.1)
 
 writer.save()
+
+#################
+# Lunch excel file
+#################
+
+os.system(out_path)
