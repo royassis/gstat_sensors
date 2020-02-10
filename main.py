@@ -1,20 +1,17 @@
 import pandas as pd
-from functions import get_col_widths
+from functions import get_col_widths, get_range
 import os
 
 #################
 # Close excel files
 #################
-try:
-    os.system("taskkill /f /im " + 'EXCEL.exe')
-except:
-    pass
+os.system("taskkill /f /im " + 'EXCEL.exe')
 
 #################
 # Import data
 #################
-path = r"C:\Users\roy\Desktop\sensors.xlsx"
-out_path = r"C:\Users\roy\Desktop\sensorsOUT.xlsx"
+path = r"data/sensors.xlsx"
+out_path = r"data/sensorsOUT.xlsx"
 
 cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'description', 'prod_line']
 df = pd.read_excel(path, sheet_name='working copy', usecols=cols)
@@ -47,7 +44,6 @@ df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number'
 #################
 # Is ok Conditions
 #################
-
 ## Condition 1 - Sensor tagname must adhere to the following regex
 # regex = r'^[A-z][A-z]\d\d[A-z][A-z]\d\d.*$'
 # cond1 = ~ df.sensor_tagname.dropna().str.match(regex, na=False)
@@ -76,30 +72,44 @@ df["problem"][conds] = 1
 #################
 # Output to file and format excel
 #################
+# Set the column order
+columns = ['id', 'lVarId', 'sensor_tagname', 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
+       'device_number', 'suffix','description', 'prod_line', 'redundent suffix', 'lonly suffix','problem']
+
+# Set writer
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
-df.to_excel(writer, index_label='id', sheet_name='Sheet1')
+df.to_excel(writer, index_label='id', sheet_name='Sheet1', columns = columns)
 
 workbook = writer.book
 worksheet = writer.sheets['Sheet1']
 
+# Set cell format
 format1 = workbook.add_format({'bg_color': '#FFC7CE',
                                'font_color': '#9C0006'})
 
-range = 'N2:Q3000'
+# Set cell range
+a, b, c, d = len(df.columns) - 1, 2, \
+             len(df.columns) + 1, len(df) + 2
+
+range = get_range(a, b, c, d)
+
+# Apply format to range
 worksheet.conditional_format(range, {'type': 'cell',
                                      'criteria': '=',
                                      'value': 1,
                                      'format': format1})
 
+# Freeze top row
 worksheet.freeze_panes(1, 0)
 
+# Autowidth columns
 for i, width in enumerate(get_col_widths(df)):
     worksheet.set_column(i, i, width * 1.1)
 
+# Save
 writer.save()
 
 #################
 # Lunch excel file
 #################
-
 os.system(out_path)
