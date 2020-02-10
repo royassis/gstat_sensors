@@ -7,6 +7,7 @@ import os
 #################
 os.system("taskkill /f /im " + 'EXCEL.exe')
 
+
 #################
 # Import data
 #################
@@ -29,6 +30,9 @@ breakdown = df.sensor_tagname.str.extract(r"(?P<prefix>^.*?)"
 
 df = df.merge(breakdown, right_index=True, left_index=True)
 
+# Add sensorname column
+df["sensor_name"] = (df['op_area_name'] + df['op_area_number'] + df['device_kind'] + df['suffix']).str.upper()
+
 #################
 # Get only elevent sensors
 #################
@@ -36,7 +40,7 @@ op_area_values = ['cc']
 device_kind_values = ['cd', 'cr', 'cv', 'wc', 'wd']
 cond = (df['op_area_name'].isin(op_area_values)) & (df['device_kind'].isin(device_kind_values)) | \
        (df['sensor_tagname'].str.contains(r'MR02', na=False)) | \
-       (df['sensor_tagname'].str.contains(r'MR04+TK', na=False)) | \
+       (df['sensor_tagname'].str.contains(r'MR04TK', na=False)) | \
        (df['sensor_tagname'].str.contains(r'PS01MP', na=False))
 
 df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number', 'suffix'])
@@ -73,7 +77,7 @@ df["problem"][conds] = 1
 # Output to file and format excel
 #################
 # Set the column order
-columns = ['id', 'lVarId', 'sensor_tagname', 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
+columns = ['id', 'lVarId', 'sensor_tagname',"sensor_name", 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
        'device_number', 'suffix','description', 'prod_line', 'redundent suffix', 'lonly suffix','problem']
 
 # Set writer
@@ -112,4 +116,5 @@ writer.save()
 #################
 # Lunch excel file
 #################
-os.system(out_path)
+full_out_path = os.path.join(os.getcwd(),out_path )
+os.system(full_out_path)
