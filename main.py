@@ -6,9 +6,12 @@ import pandas as pd
 path = r"C:\Users\roy\Desktop\sensors.xlsx"
 out_path = r"C:\Users\roy\Desktop\sensorsOUT.xlsx"
 
-df = pd.read_excel(path, sheet_name='working copy',  index_col='id')
-original = df.copy()
+cols = ['id','lVarId', 'sensor_tagname', 'device', 'device_kind', 'device_number',
+       'op_area','HMI', 'description','prod_line','sensor_kind', 'sensor_suffix']
+df = pd.read_excel(path, sheet_name='working copy', usecols = cols ,index_col='id')
 
+prod_line_values = ['CC01','CC02','CC03','CC04']
+cond0 = (df['prod_line'].isin(prod_line_values)) & ()
 #################
 # Conditions
 #################
