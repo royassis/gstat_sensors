@@ -1,11 +1,7 @@
 import pandas as pd
 from functions import get_col_widths, get_range
 import os
-
-#################
-# Close excel files
-#################
-os.system("taskkill /f /im " + 'EXCEL.exe')
+import psutil
 
 
 #################
@@ -113,8 +109,18 @@ for i, width in enumerate(get_col_widths(df)):
 # Save
 writer.save()
 
+
+#################
+# Close excel files
+#################
+if "EXCEL.EXE" in (p.name() for p in psutil.process_iter()):
+    os.system("taskkill /f /im " + 'EXCEL.exe')
+
+
 #################
 # Lunch excel file
 #################
 full_out_path = os.path.join(os.getcwd(),out_path )
 os.system(full_out_path)
+
+
