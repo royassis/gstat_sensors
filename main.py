@@ -1,10 +1,10 @@
 #################
 # Imports and Settings
 #################
-import pandas as pd
-from functions import get_col_widths, get_range
 import os
 import psutil
+import pandas as pd
+from functions import get_col_widths, get_range
 
 pd.set_option('mode.chained_assignment', None)
 
@@ -48,7 +48,7 @@ df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number'
 #################
 # Is ok Conditions
 #################
-## Condition 1 - Sensor tagname must adhere to the following regex
+# Condition 1 - Sensor tagname must adhere to the following regex
 # regex = r'^[A-z][A-z]\d\d[A-z][A-z]\d\d.*$'
 # cond1 = ~ df.sensor_tagname.dropna().str.match(regex, na=False)
 
@@ -77,12 +77,13 @@ df["problem"][conds] = 1
 # Output to file and format excel
 #################
 # Set the column order
-columns = ['id', 'lVarId', 'sensor_tagname',"sensor_name", 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
-       'device_number', 'suffix','description', 'prod_line', 'redundent suffix', 'lonly suffix','problem']
+columns = ['id', 'lVarId', 'sensor_tagname', "sensor_name", 'HMI', 'prefix', 'op_area_name', 'op_area_number',
+           'device_kind',
+           'device_number', 'suffix', 'description', 'prod_line', 'redundent suffix', 'lonly suffix', 'problem']
 
 # Set writer
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
-df.to_excel(writer, index_label='id', sheet_name='Sheet1', columns = columns)
+df.to_excel(writer, index_label='id', sheet_name='Sheet1', columns=columns)
 
 workbook = writer.book
 worksheet = writer.sheets['Sheet1']
@@ -95,13 +96,13 @@ format1 = workbook.add_format({'bg_color': '#FFC7CE',
 a, b, c, d = len(df.columns) - 1, 2, \
              len(df.columns) + 1, len(df) + 2
 
-range = get_range(a, b, c, d)
+cell_range = get_range(a, b, c, d)
 
 # Apply format to range
-worksheet.conditional_format(range, {'type': 'cell',
-                                     'criteria': '=',
-                                     'value': 1,
-                                     'format': format1})
+worksheet.conditional_format(cell_range, {'type': 'cell',
+                                          'criteria': '=',
+                                          'value': 1,
+                                          'format': format1})
 
 # Freeze top row
 worksheet.freeze_panes(1, 0)
@@ -113,18 +114,14 @@ for i, width in enumerate(get_col_widths(df)):
 # Save
 writer.save()
 
-
 #################
 # Close excel files
 #################
 if "EXCEL.EXE" in (p.name() for p in psutil.process_iter()):
     os.system("taskkill /f /im " + 'EXCEL.exe')
 
-
 #################
 # Lunch excel file
 #################
-full_out_path = os.path.join(os.getcwd(),out_path )
+full_out_path = os.path.join(os.getcwd(), out_path)
 os.system(full_out_path)
-
-
