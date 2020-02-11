@@ -11,11 +11,14 @@ pd.set_option('mode.chained_assignment', None)
 #################
 # Import data
 #################
-path = r"data/sensors.xlsx"
+in_path = r"data/sensors.xlsx"
 out_path = r"data/sensorsOUT.xlsx"
 
-cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'description', 'prod_line']
-df = pd.read_excel(path, sheet_name='working copy', usecols=cols)
+usecols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'תיאור',"קו"]
+cols = ['lVarId', 'sensor_tagname', 'HMI', 'description', 'prod_line']
+
+df = pd.read_excel(in_path, sheet_name='sensors',  usecols = usecols, index_col ='id')
+df.columns = cols
 
 #################
 # Breakdown tag with regex
@@ -30,14 +33,34 @@ breakdown = df.sensor_tagname.str.extract(r"(?P<prefix>^.*?)"
 
 df = df.merge(breakdown, right_index=True, left_index=True)
 
+#################
 # Add sensorname column
-df["sensor_name"] = (df['op_area_name'] + df['op_area_number'] + df['device_kind'] + df['suffix']).str.upper()
+#################
+prefix = df["prefix"].copy()
+op_area_name = df['op_area_name']
+op_area_number = df['op_area_number']
+device_kind = df['device_kind']
+suffix = df['suffix']
+
+cond1 = df["prefix"].str.match(r'^d$', na=False)
+cond2 = df["prefix"].str.match(r'^p\d\d\d\d', na=False)
+cond3 = df["prefix"].str.match(r'^p\d\d\d', na=False)
+
+prefix[cond1] = ""
+prefix[cond2] = df["prefix"][cond2].str.extract(r'^(p\d\d)')[0]
+prefix[cond3] = ""
+
+df["sensor_name"] = (prefix.str.strip().str.capitalize() +
+                     op_area_name.str.strip().str.upper() +
+                     op_area_number.str.strip().str.upper() +
+                     device_kind.str.strip().str.upper() +
+                     suffix.str.strip().upper())
 
 #################
 # Get only elevent sensors
 #################
 op_area_values = ['cc']
-device_kind_values = ['cd', 'cr', 'cv', 'wc', 'wd']
+device_kind_values = ['cd', 'cr', 'cv', 'wc', 'wd',"xx"]
 cond = (df['op_area_name'].isin(op_area_values)) & (df['device_kind'].isin(device_kind_values)) | \
        (df['sensor_tagname'].str.contains(r'MR02', na=False)) | \
        (df['sensor_tagname'].str.contains(r'MR04TK', na=False)) | \
@@ -77,13 +100,13 @@ df["problem"][conds] = 1
 # Output to file and format excel
 #################
 # Set the column order
-columns = ['id', 'lVarId', 'sensor_tagname', "sensor_name", 'HMI', 'prefix', 'op_area_name', 'op_area_number',
-           'device_kind',
-           'device_number', 'suffix', 'description', 'prod_line', 'redundent suffix', 'lonly suffix', 'problem']
+columns = ['lVarId', 'HMI','sensor_tagname', "sensor_name",  'prefix', 'op_area_name', 'op_area_number','device_kind',
+           'device_number', 'suffix', 'description', 'prod_line']
 
+df = df[columns]
 # Set writer
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
-df.to_excel(writer, index_label='id', sheet_name='Sheet1', columns=columns)
+df.to_excel(writer, index_label='id', sheet_name='Sheet1')
 
 workbook = writer.book
 worksheet = writer.sheets['Sheet1']
