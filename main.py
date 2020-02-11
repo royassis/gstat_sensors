@@ -1,8 +1,12 @@
+#################
+# Imports and Settings
+#################
 import pandas as pd
 from functions import get_col_widths, get_range
 import os
 import psutil
 
+pd.set_option('mode.chained_assignment', None)
 
 #################
 # Import data
