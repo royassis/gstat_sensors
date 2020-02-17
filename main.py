@@ -1,7 +1,11 @@
 import os
 import re
+
 import pandas as pd
+import numpy as np
+
 from functions import get_col_widths
+
 pd.set_option('mode.chained_assignment', None)
 
 #################
@@ -9,15 +13,16 @@ pd.set_option('mode.chained_assignment', None)
 #################
 os.system("taskkill /f /im " + 'EXCEL.exe')
 
-
 #################
 # Import data
 #################
 path = r"data/sensorsIN.xlsx"
 out_path = r"data/sensorsOUT.xlsx"
 
-cols = ['id', 'lVarId', 'sensor_tagname', 'HMI']
-df = pd.read_excel(path, sheet_name='sensors', usecols=cols, index_col = 'id')
+cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'desc']
+df = pd.read_excel(path, sheet_name='sensors', usecols=cols, index_col='id')
+
+df = df.drop_duplicates("sensor_tagname").replace('^$', np.nan, regex=True)
 
 #################
 # Breakdown tag with regex
@@ -32,37 +37,41 @@ breakdown = df.sensor_tagname.str.extract(r"(?P<prefix>^.*?)"
 
 df = df.merge(breakdown, right_index=True, left_index=True)
 
-
 #################
 # Get only elevent sensors
 #################
 regex_token_list = ['(CC\d\d(cd|cr|cv|wc|wd|xx))',
-                   '(MR\d\dTK)',
-                   '(PS01MP)']
+                    '(MR0[24])',
+                    '(PS01(mp|tk)\d\d)']
 regex = r"|".join(regex_token_list)
-cond = (df['sensor_tagname'].str.contains(regex,flags = re.IGNORECASE, na=False))
-
+cond = (df['sensor_tagname'].str.contains(regex, flags=re.IGNORECASE, na=False))
 
 #################
-# Prepare for output
+# Edit sensor_name
 #################
+prefix = df['prefix']
+prefix = prefix.replace(r'^d$', '', regex=True)
+
+suffix = df['suffix']
+suffix = suffix.replace("\s*jdc\s*", "", regex=True)
+
 df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number', 'suffix'])
-df["sensor_name"] = (df['prefix'] + df['op_area_name'] + df['op_area_number'] + df['device_kind'] + df['suffix']).str.upper()
+df["sensor_name"] = (prefix + df['op_area_name'] + df['op_area_number'] + df['device_kind'] + suffix).str.upper()
 df["sensor_name_edited"] = df["sensor_name"]
-df = df.drop_duplicates('sensor_tagname')
 
 #################
 # Output to file
 #################
 # Set the column order
-columns = ['lVarId', 'sensor_tagname',"sensor_name","sensor_name_edited", 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
-       'device_number', 'suffix']
+columns = ['lVarId', 'sensor_tagname', "sensor_name", "sensor_name_edited", 'HMI', 'prefix', 'op_area_name',
+           'op_area_number', 'device_kind',
+           'device_number', 'suffix', 'desc']
 
 df = df[columns]
 
 # Set writer
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
-df.to_excel(writer, index_label='id', sheet_name='data', columns = columns)
+df.to_excel(writer, index_label='id', sheet_name='data', columns=columns)
 
 workbook = writer.book
 worksheet = writer.sheets['data']
@@ -80,6 +89,5 @@ writer.save()
 #################
 # Lunch excel file
 #################
-full_out_path = os.path.join(os.getcwd(),out_path )
+full_out_path = os.path.join(os.getcwd(), out_path)
 os.system(full_out_path)
-
