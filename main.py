@@ -36,7 +36,10 @@ df = df.merge(breakdown, right_index=True, left_index=True)
 #################
 # Get only elevent sensors
 #################
-regex = r'(CC\d\d(cd|cr|cv|wc|wd|xx))|(MR\d\dTK)|(PS01MP)'
+regex_token_list = ['(CC\d\d(cd|cr|cv|wc|wd|xx))',
+                   '(MR\d\dTK)',
+                   '(PS01MP)']
+regex = r"|".join(regex_token_list)
 cond = (df['sensor_tagname'].str.contains(regex,flags = re.IGNORECASE, na=False))
 
 
