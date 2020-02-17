@@ -36,7 +36,8 @@ df = df.merge(breakdown, right_index=True, left_index=True)
 #################
 # Get only elevent sensors
 #################
-cond = (df['sensor_tagname'].str.contains(r'(CC\d\d(cd|cr|cv|wc|wd))|(MR\d\dTK)|(PS01MP)',flags = re.IGNORECASE, na=False))
+regex = r'(CC\d\d(cd|cr|cv|wc|wd|xx))|(MR\d\dTK)|(PS01MP)'
+cond = (df['sensor_tagname'].str.contains(regex,flags = re.IGNORECASE, na=False))
 
 
 #################
@@ -44,20 +45,24 @@ cond = (df['sensor_tagname'].str.contains(r'(CC\d\d(cd|cr|cv|wc|wd))|(MR\d\dTK)|
 #################
 df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number', 'suffix'])
 df["sensor_name"] = (df['prefix'] + df['op_area_name'] + df['op_area_number'] + df['device_kind'] + df['suffix']).str.upper()
+df["sensor_name_edited"] = df["sensor_name"]
+df = df.drop_duplicates('sensor_tagname')
 
 #################
 # Output to file
 #################
 # Set the column order
-columns = ['lVarId', 'sensor_tagname',"sensor_name", 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
+columns = ['lVarId', 'sensor_tagname',"sensor_name","sensor_name_edited", 'HMI','prefix', 'op_area_name', 'op_area_number', 'device_kind',
        'device_number', 'suffix']
+
+df = df[columns]
 
 # Set writer
 writer = pd.ExcelWriter(out_path, engine='xlsxwriter')
-df.to_excel(writer, index_label='id', sheet_name='Sheet1', columns = columns)
+df.to_excel(writer, index_label='id', sheet_name='data', columns = columns)
 
 workbook = writer.book
-worksheet = writer.sheets['Sheet1']
+worksheet = writer.sheets['data']
 
 # Freeze top row
 worksheet.freeze_panes(1, 0)
@@ -72,6 +77,6 @@ writer.save()
 #################
 # Lunch excel file
 #################
-# full_out_path = os.path.join(os.getcwd(),out_path )
-# os.system(full_out_path)
+full_out_path = os.path.join(os.getcwd(),out_path )
+os.system(full_out_path)
 
