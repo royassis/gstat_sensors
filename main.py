@@ -22,6 +22,7 @@ out_path = r"data/sensorsOUT.xlsx"
 cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'desc']
 df = pd.read_excel(path, sheet_name='sensors', usecols=cols, index_col='id')
 
+df['sensor_tagname'] = df['sensor_tagname'].str.lower()
 df = df.drop_duplicates("sensor_tagname").replace('^$', np.nan, regex=True)
 
 #################

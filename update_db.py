@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 
 db_name = 'sensors'
 log_tbl = 'logs'
+
 l = [
     ['lines',r'C:\Users\User\PycharmProjects\gstat_sensors\data\lines.xlsx'],
     ['sensor_data', r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensors_base.xlsx'],
