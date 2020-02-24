@@ -1,3 +1,6 @@
+import datetime, time, functools
+
+
 def get_col_widths(dataframe):
     # First we find the maximum length of the index column
     idx_max = max([len(str(s)) for s in dataframe.index.values] + [len(str(dataframe.index.name))])
@@ -16,3 +19,21 @@ def colnum_string(n):
 def get_range(a, b, c, d):
     string = colnum_string(a) + str(b) + ':' + colnum_string(c) + str(d)
     return string
+
+
+def sleeper(execution_time):
+    now = datetime.datetime.now()
+    start_date = (now + datetime.timedelta(days=1)).replace(hour=execution_time, minute=0)
+    sleep_time = (start_date-now).seconds
+    time.sleep(sleep_time)
+
+def timer(sleep_time):
+    def timer(func):
+        @functools.wraps(func)
+        def warpper(*args, **kwargs):
+            sleeper(sleep_time, *args, **kwargs)
+            func(*args, **kwargs)
+        return warpper
+    return timer
+
+
