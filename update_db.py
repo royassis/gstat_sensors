@@ -15,9 +15,9 @@ l = [
 connstr = 'mssql+pyodbc://DESKTOP-TL42QJI\SQLEXPRESS/{}?driver=SQL+Server+Native+Client+11.0'.format(db_name)
 engine = create_engine(connstr)
 
-for d in l:
+for tbl,path in l:
     # log_data = pd.DataFrame([['2020-02-19', d[0]]], columns = ['logtime','tablename'])
     # log_data.to_sql(log_tbl, con=engine, if_exists= 'append', index= False)
-    df = pd.read_excel(d[1])
-    df.to_sql(d[0], con=engine, if_exists= 'replace', index_label= 'id', index= False)
+    df = pd.read_excel(path)
+    df.to_sql(tbl, con=engine, if_exists= 'replace', index_label= 'id', index= False)
 
