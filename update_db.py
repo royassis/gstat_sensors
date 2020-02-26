@@ -24,7 +24,7 @@ def main ():
     file_update_timestamp = os.path.getatime(r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensorsOUT.xlsx')
     file_update_datetime = datetime.fromtimestamp(file_update_timestamp).replace(second =0, microsecond= 0)
 
-    last_log_datetime = (pd.read_sql_query('SELECT MAX(logtime) FROM logs',connstr).values[0][0]).replace(second =0, microsecond= 0)
+    last_log_datetime = (pd.read_sql_query('SELECT MAX(logtime) FROM logs',connstr).values[0][0])
 
     if last_log_datetime > file_update_datetime:
 
