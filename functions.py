@@ -37,3 +37,7 @@ def timer(sleep_time):
     return timer
 
 
+def lower_all_strings(col):
+    if col.dtype == 'object':
+        return col.str.lower()
+    return col
