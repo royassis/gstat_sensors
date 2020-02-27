@@ -67,13 +67,13 @@ cond2 = (b['start'].dt.year == b['finish'].dt.year) \
 b[cond2]['finish', 'start'] = None
 
 
-# Group by to remove batches that have multiple device kinds
+# Groupby inorder remove batches that have multiple device kinds
 b = b.groupby(['batch_id', 'device_kind']).agg({'device_number': 'max',
                                                 'start': 'max',
                                                 'finish': 'max'}) \
                                           .reset_index()
 
-# Re order device kinds
+# Reorder device kinds
 device_order = ['tk', 'mp', 'cv', 'wd', 'wc', 'cd', 'cr']
 
 b['device_kind'] = b['device_kind'].astype('category')
