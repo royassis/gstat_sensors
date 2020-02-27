@@ -28,8 +28,6 @@ a = pd.read_excel(io = fullpath,
 
 a['device_number'] = pd.to_numeric(a['device_number'], errors = 'coerce')
 
-a = a.dropna(axis = 0 , subset = ['device_number']).astype({'device_number':np.int32})
-
 # ------------------------------------ read file 2 ------------------------------------  #
 filename = r'tables_cottage_stages.csv'
 fullpath = base+filename
@@ -49,8 +47,6 @@ b = pd.read_csv(filepath_or_buffer = fullpath,
 
 b['device_number'] = pd.to_numeric(b['device_number'], errors = 'coerce')
 
-b = b.dropna(axis = 0 , subset = ['device_number']).astype({'device_number':np.int32})
-
 b['device_kind'] = b['device_kind'].str.lower()
 
 cond = (b['start'].dt.year == b['finish'].dt.year) \
@@ -62,6 +58,13 @@ cond = (b['start'].dt.year == b['finish'].dt.year) \
 
 b = b[cond]
 
+device_order = ['tk', 'mp', 'wd', 'wc', 'cr']
+
+d= b.groupby(['batch_id','device_kind']).agg({'device_number': 'max',
+                                          'start': 'max',
+                                          'finish': 'max'})\
+                                        .reset_index()
+
 
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])\
@@ -70,19 +73,13 @@ merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_
 in_start   = merged.groupby(['batch_id'])['finish'].shift(1).rename('start')
 in_finish  = merged['start'].rename('finish')
 
-time_for_inpipes = pd.concat([in_start,in_finish], axis = 1).dropna()
+time_for_inpipes = pd.concat([in_start,in_finish], axis = 1)
 
 
 
 
 
 
-
-
-
-
-# times['in_pipes'] = times['in_pipes'].str.split(';')
-# times = times.explode('in_pipes')
 
 # test = pd.DataFrame([[1,2],
 #                      [3,4],
