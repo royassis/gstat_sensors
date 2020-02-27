@@ -4,7 +4,7 @@ from functions import lower_all_strings
 
 base = r'data/'
 
-# ------------------------------------ read file 1 ------------------------------------  #
+# ------------------------------------ read and format file 1 ------------------------------------  #
 filename = r'sensor_joined.xlsx'
 fullpath = base+filename
 
@@ -28,7 +28,7 @@ a = pd.read_excel(io = fullpath,
 
 a['device_number'] = pd.to_numeric(a['device_number'], errors = 'coerce')
 
-# ------------------------------------ read file 2 ------------------------------------  #
+# ------------------------------------ read and format file 2 ------------------------------------  #
 filename = r'tables_cottage_stages.csv'
 fullpath = base+filename
 
@@ -49,13 +49,17 @@ b['device_number'] = pd.to_numeric(b['device_number'], errors = 'coerce')
 
 b['device_kind'] = b['device_kind'].str.lower()
 
+device_order = ['tk','mp','cv','wd','wc','cd','cr']
+b['device_kind'] = b['device_kind'].astype('category')
+b['device_kind'].cat.set_categories(device_order).cat.reorder_categories(device_order, ordered = True)
+
 cond1 = (b['device_kind']!='packing')
 
 cond2 = (b['start'].dt.year == b['finish'].dt.year) \
-       & (b['start'].dt.year != '2001') \
-       & (b['finish'] != pd.Timestamp('2019-02-12 12:46:00')) \
-       & (b['finish'] > b['start'] )\
-       & (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
+       | (b['start'].dt.year != '2001') \
+       | (b['finish'] != pd.Timestamp('2019-02-12 12:46:00')) \
+       | (b['finish'] > b['start'] )\
+       | (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
 
 b = b[cond1]
 b[cond2]['finish','start'] = None
@@ -64,6 +68,7 @@ b= b.groupby(['batch_id','device_kind']).agg({'device_number': 'max',
                                           'start': 'max',
                                           'finish': 'max'})\
                                         .reset_index()
+
 
 
 # ------------------------------------ merge files ------------------------------------  #
