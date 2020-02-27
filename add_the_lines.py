@@ -28,6 +28,7 @@ a = pd.read_excel(io = fullpath,
 
 a['device_number'] = pd.to_numeric(a['device_number'], errors = 'coerce')
 
+
 # ------------------------------------ read and format file 2 ------------------------------------  #
 filename = r'tables_cottage_stages.csv'
 fullpath = base+filename
@@ -49,10 +50,6 @@ b['device_number'] = pd.to_numeric(b['device_number'], errors = 'coerce')
 
 b['device_kind'] = b['device_kind'].str.lower()
 
-device_order = ['tk','mp','cv','wd','wc','cd','cr']
-b['device_kind'] = b['device_kind'].astype('category')
-b['device_kind'].cat.set_categories(device_order).cat.reorder_categories(device_order, ordered = True)
-
 cond1 = (b['device_kind']!='packing')
 
 cond2 = (b['start'].dt.year == b['finish'].dt.year) \
@@ -69,17 +66,23 @@ b= b.groupby(['batch_id','device_kind']).agg({'device_number': 'max',
                                           'finish': 'max'})\
                                         .reset_index()
 
+device_order = ['tk','mp','cv','wd','wc','cd','cr']
+b['device_kind'] = b['device_kind'].astype('category')
+b['device_kind'] = b['device_kind'].cat.set_categories(device_order).cat.reorder_categories(device_order, ordered = True)
+
+b = b.sort_values(['batch_id','device_kind'], ascending = [True,True]).reset_index()
+
+in_start   = b.groupby(['batch_id'])['finish'].shift(1).rename('start')
+in_finish  = b['start'].rename('finish')
+
+time_for_inpipes = pd.concat([in_start,in_finish,b.device_kind], axis = 1)
+
 
 
 # ------------------------------------ merge files ------------------------------------  #
-merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])\
-    .sort_values(['batch_id','start'], ascending = [True,True])
+merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])
 
-in_start   = merged.groupby(['batch_id'])['finish'].shift(1).rename('start')
-in_finish  = merged['start'].rename('finish')
-
-time_for_inpipes = pd.concat([in_start,in_finish], axis = 1)
-
+merged = merged.sort_values(['batch_id','device_kind'], ascending = [True,True]).reset_index()
 
 
 # test = pd.DataFrame([[1,2],
