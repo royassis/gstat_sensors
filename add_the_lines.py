@@ -56,6 +56,7 @@ b['device_kind'] = b['device_kind'].str.lower()
 cond = (b['start'].dt.year == b['finish'].dt.year) \
        & (b['device_kind']!='packing') \
        & (b['start'].dt.year != '2001') \
+       & (b['finish'] != pd.Timestamp('2019-02-12 12:46:00')) \
        & (b['finish'] > b['start'] )\
        & (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
 
@@ -66,15 +67,26 @@ b = b[cond]
 merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])\
     .sort_values(['batch_id','start'], ascending = [True,True])
 
-xx_start = merged['finish'].rename('start')
-xx_finish   = merged.groupby(['batch_id'])['start'].shift(-1).rename('finish')
+in_start   = merged.groupby(['batch_id'])['finish'].shift(1).rename('start')
+in_finish  = merged['start'].rename('finish')
 
-times = pd.concat([xx_start,xx_finish], axis = 1).dropna()
-
-
-
-times['in_pipes'] = times['in_pipes'].str.split(';')
-times = times.explode('in_pipes')
+time_for_inpipes = pd.concat([in_start,in_finish], axis = 1).dropna()
 
 
 
+
+
+
+
+
+
+
+# times['in_pipes'] = times['in_pipes'].str.split(';')
+# times = times.explode('in_pipes')
+
+# test = pd.DataFrame([[1,2],
+#                      [3,4],
+#                      [5,6],
+#                      [7,8]], columns = ['start','finish'])
+#
+# pd.concat([test.finish.shift(1),test.start], axis = 1)
