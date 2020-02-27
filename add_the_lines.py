@@ -37,6 +37,7 @@ fullpath = base+filename
 dtypes = {'batchid' : int,
          'stageid' : int,
          'stage' : str}
+
 date_cols = ['start', 'finish']
 
 b = pd.read_csv(filepath_or_buffer = fullpath,
@@ -52,7 +53,28 @@ b = b.dropna(axis = 0 , subset = ['device_number']).astype({'device_number':np.i
 
 b['device_kind'] = b['device_kind'].str.lower()
 
+cond = (b['start'].dt.year == b['finish'].dt.year) \
+       & (b['device_kind']!='packing') \
+       & (b['start'].dt.year != '2001') \
+       & (b['finish'] > b['start'] )\
+       & (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
+
+b = b[cond]
+
+
 # ------------------------------------ merge files ------------------------------------  #
-a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])
+merged = a.merge(b, left_on =['device_kind','device_number'],right_on =['device_kind','device_number'])\
+    .sort_values(['batch_id','start'], ascending = [True,True])
+
+xx_start = merged['finish'].rename('start')
+xx_finish   = merged.groupby(['batch_id'])['start'].shift(-1).rename('finish')
+
+times = pd.concat([xx_start,xx_finish], axis = 1).dropna()
+
+
+
+times['in_pipes'] = times['in_pipes'].str.split(';')
+times = times.explode('in_pipes')
+
 
 
