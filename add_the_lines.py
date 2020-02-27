@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from functions import lower_all_strings
+
+# We do not know if the 'start' and 'finish' time include the time that the batch have gone in the pipe
 
 base = r'data/'
-
 # ------------------------------------ read and format file 1 ------------------------------------  #
 filename = r'sensor_joined.xlsx'
 fullpath = base + filename
@@ -59,11 +59,11 @@ b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
 cond1 = (b['device_kind'] != 'packing')
 b = b[cond1]
 
-cond2 = (b['start'].dt.year == b['finish'].dt.year) \
-        | (b['start'].dt.year != '2001') \
-        | (b['finish'] != pd.Timestamp('2019-02-12 12:46:00')) \
-        | (b['finish'] > b['start']) \
-        | (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
+cond2 = (b['start'].dt.year != b['finish'].dt.year) \
+        | (b['start'].dt.year == '2001') \
+        | (b['finish'] == pd.Timestamp('2019-02-12 12:46:00')) \
+        | (b['finish'] < b['start']) \
+        | (b['finish'] - b['start'] > pd.Timedelta('0 days 03:00:00'))
 b[cond2]['finish', 'start'] = None
 
 
@@ -89,6 +89,8 @@ time_for_inpipes = pd.concat([in_start, in_finish], axis=1)
 out_start = b['finish'].rename('start')
 out_finish = b.groupby(['batch_id'])['start'].shift(-1).rename('finish')
 time_for_outpipes = pd.concat([out_start, out_finish], axis=1)
+
+
 
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
