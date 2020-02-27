@@ -49,18 +49,18 @@ b['device_number'] = pd.to_numeric(b['device_number'], errors = 'coerce')
 
 b['device_kind'] = b['device_kind'].str.lower()
 
-cond = (b['start'].dt.year == b['finish'].dt.year) \
-       & (b['device_kind']!='packing') \
+cond1 = (b['device_kind']!='packing')
+
+cond2 = (b['start'].dt.year == b['finish'].dt.year) \
        & (b['start'].dt.year != '2001') \
        & (b['finish'] != pd.Timestamp('2019-02-12 12:46:00')) \
        & (b['finish'] > b['start'] )\
        & (b['finish'] - b['start'] < pd.Timedelta('0 days 03:00:00'))
 
-b = b[cond]
+b = b[cond1]
+b[cond2]['finish','start'] = None
 
-device_order = ['tk', 'mp', 'wd', 'wc', 'cr']
-
-d= b.groupby(['batch_id','device_kind']).agg({'device_number': 'max',
+b= b.groupby(['batch_id','device_kind']).agg({'device_number': 'max',
                                           'start': 'max',
                                           'finish': 'max'})\
                                         .reset_index()
@@ -74,10 +74,6 @@ in_start   = merged.groupby(['batch_id'])['finish'].shift(1).rename('start')
 in_finish  = merged['start'].rename('finish')
 
 time_for_inpipes = pd.concat([in_start,in_finish], axis = 1)
-
-
-
-
 
 
 
