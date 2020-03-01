@@ -52,7 +52,7 @@ b = pd.read_csv(filepath_or_buffer=fullpath,
 b = b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
              device_kind   = b['device_kind'].str.lower(),
              delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h')),
-             delta_bins    = pd.cut( ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))  ,  20)
+             delta_bins    = pd.cut( ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))  , bins= 10, labels = np.arange(10))
              )
 
 
@@ -84,15 +84,15 @@ b['device_kind'] = b['device_kind'].cat.set_categories(device_order).cat.reorder
 
 b = b.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
 
-# Shift times up or down in order to find time of batch in pipes
+# Shift time up - inpipes
 in_start = b.groupby(['batch_id'])['finish'].shift(1).rename('start')
 in_finish = b['start'].rename('finish')
 time_for_inpipes = pd.concat([in_start, in_finish], axis=1)
 
+# Shift time down - outpipes
 out_start = b['finish'].rename('start')
 out_finish = b.groupby(['batch_id'])['start'].shift(-1).rename('finish')
 time_for_outpipes = pd.concat([out_start, out_finish], axis=1)
-
 
 
 # ------------------------------------ merge files ------------------------------------  #
