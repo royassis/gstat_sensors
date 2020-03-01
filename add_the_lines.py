@@ -89,12 +89,14 @@ in_start = b.groupby(['batch_id'])['finish'].shift(1).rename('start')
 in_finish = b['start'].rename('finish')
 time_for_inpipes = pd.concat([in_start, in_finish], axis=1)
 time_for_inpipes = time_for_inpipes.assign(delta = (time_for_inpipes['finish'] - time_for_inpipes['start'])/ np.timedelta64(1, 'h'))
+prec_lower_inpipes = ((time_for_inpipes.delta[time_for_inpipes.delta> 0]).shape[0])/(time_for_inpipes.delta.shape[0])
 
 # Shift time down - outpipes
 out_start = b['finish'].rename('start')
 out_finish = b.groupby(['batch_id'])['start'].shift(-1).rename('finish')
 time_for_outpipes = pd.concat([out_start, out_finish], axis=1)
 time_for_outpipes = time_for_outpipes.assign(delta = (time_for_outpipes['finish'] - time_for_outpipes['start'])/ np.timedelta64(1, 'h'))
+prec_lower_outpipes = ((time_for_outpipes.delta[time_for_outpipes.delta> 0]).shape[0])/(time_for_outpipes.delta.shape[0])
 
 
 # ------------------------------------ merge files ------------------------------------  #
