@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import zscore
 
 # We do not know if the 'start' and 'finish' time include the time that the batch have gone in the pipe
 
@@ -55,7 +54,7 @@ b = b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
              delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))
              )
 
-b = b.assign(z_score       = b.groupby('device_kind')['delta'].transform(lambda x : zscore(x,ddof=1)),
+b = b.assign(delta_q_bins  = pd.qcut( b['delta'] , q= 10, precision = 7 , labels = (np.arange(10)+1)*10),
              delta_bins    = pd.cut( b['delta']  , bins= 10, labels = np.arange(10))
              )
 
