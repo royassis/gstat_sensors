@@ -54,9 +54,10 @@ b = b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
              delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))
              )
 
-b = b.assign(delta_q_bins  = pd.qcut( b['delta'] , q= 10, precision = 7 , labels = (np.arange(10)+1)*10),
-             delta_bins    = pd.cut( b['delta']  , bins= 10, labels = np.arange(10))
+b = b.assign(delta_q_bins  = b.groupby(['device_kind'])['delta'].transform(
+             lambda x: pd.qcut(x, q=10, precision=7, labels=False, duplicates='drop'))
              )
+
 
 # Remove 'packing' category
 # Set some dates to Null
@@ -66,6 +67,7 @@ b = b[cond1]
 cond2 = (b['start'].dt.year != 2019) \
         | (b['finish'].dt.year != 2019) \
         | (b['finish'] == pd.Timestamp('2019-02-12 12:46:00')) \
+        | (b['finish'] == pd.Timestamp('2019-02-12 12:47:00')) \
         | (b['delta'] < 0)  \
         | (b['delta'] > 15)
 
@@ -89,6 +91,7 @@ b = b.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_ind
 # Shift time up - inpipes
 in_start = b.groupby(['batch_id'])['finish'].shift(1).rename('start')
 in_finish = b['start'].rename('finish')
+
 time_for_inpipes = pd.concat([in_start, in_finish], axis=1)
 time_for_inpipes = time_for_inpipes.assign(delta = (time_for_inpipes['finish'] - time_for_inpipes['start'])/ np.timedelta64(1, 'h'))
 prec_lower_inpipes = ((time_for_inpipes.delta[time_for_inpipes.delta> 0]).shape[0])/(time_for_inpipes.delta.shape[0])
@@ -96,6 +99,7 @@ prec_lower_inpipes = ((time_for_inpipes.delta[time_for_inpipes.delta> 0]).shape[
 # Shift time down - outpipes
 out_start = b['finish'].rename('start')
 out_finish = b.groupby(['batch_id'])['start'].shift(-1).rename('finish')
+
 time_for_outpipes = pd.concat([out_start, out_finish], axis=1)
 time_for_outpipes = time_for_outpipes.assign(delta = (time_for_outpipes['finish'] - time_for_outpipes['start'])/ np.timedelta64(1, 'h'))
 prec_lower_outpipes = ((time_for_outpipes.delta[time_for_outpipes.delta> 0]).shape[0])/(time_for_outpipes.delta.shape[0])
@@ -112,3 +116,8 @@ merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True])
 #                      [7,8]], columns = ['start','finish'])
 #
 # pd.concat([test.finish.shift(1),test.start], axis = 1)
+
+
+# Convert to prev form
+xxx = b.pivot_table(index= 'batch_id',columns =  'device_kind',values=  ['start','finish','device_number'], aggfunc= 'first')
+xxx.columns = ['_'.join(col).strip() for col in xxx.columns.values]
