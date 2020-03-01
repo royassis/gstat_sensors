@@ -49,9 +49,11 @@ b = pd.read_csv(filepath_or_buffer=fullpath,
 
 #  Convert device_number non numeric to Null
 #  Lower strings
-b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
-         devic2_number = b['device_kind'].str.lower()
-         )
+b = b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
+             device_kind   = b['device_kind'].str.lower(),
+             delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h')),
+             delta_bins    = pd.cut( ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))  ,  20)
+             )
 
 
 # Remove 'packing' category
@@ -59,11 +61,12 @@ b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
 cond1 = (b['device_kind'] != 'packing')
 b = b[cond1]
 
-cond2 = (b['start'].dt.year != b['finish'].dt.year) \
-        | (b['start'].dt.year == '2001') \
+cond2 = (b['start'].dt.year != 2019) \
+        | (b['finish'].dt.year != 2019) \
         | (b['finish'] == pd.Timestamp('2019-02-12 12:46:00')) \
-        | (b['finish'] < b['start']) \
-        | (b['finish'] - b['start'] > pd.Timedelta('0 days 03:00:00'))
+        | (b['delta'] < 0)  \
+        | (b['delta'] > 15)
+
 b[cond2]['finish', 'start'] = None
 
 
