@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from scipy.stats import zscore
 
 # We do not know if the 'start' and 'finish' time include the time that the batch have gone in the pipe
 
@@ -51,10 +52,12 @@ b = pd.read_csv(filepath_or_buffer=fullpath,
 #  Lower strings
 b = b.assign(device_number = pd.to_numeric(b['device_number'], errors='coerce'),
              device_kind   = b['device_kind'].str.lower(),
-             delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h')),
-             delta_bins    = pd.cut( ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))  , bins= 10, labels = np.arange(10))
+             delta         = ((b['finish'] - b['start'])/ np.timedelta64(1, 'h'))
              )
 
+b = b.assign(z_score       = b.groupby('device_kind')['delta'].transform(lambda x : zscore(x,ddof=1)),
+             delta_bins    = pd.cut( b['delta']  , bins= 10, labels = np.arange(10))
+             )
 
 # Remove 'packing' category
 # Set some dates to Null
