@@ -119,5 +119,9 @@ merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True])
 
 
 # Convert to prev form
+pipes = ['xx_tk_mp','xx_mp_cv','xx_cv_wd','xx_wd_wc','xx_wc_cr']
+pipes = ['start_'+i for i in pipes] + ['finish_'+i for i in pipes] + pipes
+
 xxx = b.pivot_table(index= 'batch_id',columns =  'device_kind',values=  ['start','finish','device_number'], aggfunc= 'first')
 xxx.columns = ['_'.join(col).strip() for col in xxx.columns.values]
+
