@@ -43,7 +43,7 @@ df = df.merge(breakdown, right_index=True, left_index=True)
 #################
 regex_token_list = ['(CC\d\d(cd|cr|cv|wc|wd|xx))',
                     '(MR0[24])',
-                    '(PS01(mp|tk)\d\d)']
+                    '(PS01(mp|tk|xx)\d\d)']
 regex = r"|".join(regex_token_list)
 cond = (df['sensor_tagname'].str.contains(regex, flags=re.IGNORECASE, na=False))
 

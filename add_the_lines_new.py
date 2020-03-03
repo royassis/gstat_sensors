@@ -1,18 +1,18 @@
 import pandas as pd
 import numpy as np
+import os
+pd.options.display.width = 0
 
-# We do not know if the 'start' and 'finish' time include the time that the batch have gone in the pipe
-
+mapper_base = r'resources/'
 base = r'data/'
-
 # ------------------------------------ read time_mapper ------------------------------------  #
 filename = r'time_mapper.csv'
-fullpath = 'resources/' + filename
+fullpath = mapper_base + filename
 time_mapper = pd.read_csv(fullpath)
 
 # ------------------------------------ read line_mapper ------------------------------------  #
 filename = r'line_mapper.csv'
-fullpath = 'resources/' + filename
+fullpath = mapper_base + filename
 line_mapper = pd.read_csv(fullpath)
 line_mapper = line_mapper.assign(device_number=line_mapper['device_number'].str.split(','))
 
@@ -113,12 +113,12 @@ pipes[:] = np.nan
 
 xxx = pd.concat([xxx, pipes], axis=1).reset_index()
 
-# Set the start and finish times for each pipe by the logic in the 'mapper' file
+# Set the start and finish times for each pipe by the logic in the 'time_mapper' file
 for _, r in time_mapper.iterrows():
     xxx[r['to']] = xxx[r['from']]
 
 
-# Set line numbers for each pipe by the logic in the 'mapper' file
+# Set line numbers for each pipe by the logic in the 'line_mapper' file
 for _, r in line_mapper.iterrows():
     line_list = r['device_number']
 
