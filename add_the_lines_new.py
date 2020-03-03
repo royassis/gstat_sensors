@@ -146,4 +146,4 @@ merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True])
 m2 = a.merge(xxx,how='left', left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 cond = m2['batch_id'].isna()
 
-m2[cond]
+m2[cond].to_clipboard()
