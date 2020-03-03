@@ -5,10 +5,16 @@ import numpy as np
 
 base = r'data/'
 
-# ------------------------------------ read mapper ------------------------------------  #
-filename = r'another_mapper.csv'
+# ------------------------------------ read time_mapper ------------------------------------  #
+filename = r'time_mapper.csv'
 fullpath = 'resources/' + filename
-mapper = pd.read_csv(fullpath)
+time_mapper = pd.read_csv(fullpath)
+
+# ------------------------------------ read line_mapper ------------------------------------  #
+filename = r'line_mapper.csv'
+fullpath = 'resources/' + filename
+line_mapper = pd.read_csv(fullpath)
+line_mapper = line_mapper.assign(device_number=line_mapper['device_number'].str.split(','))
 
 # ------------------------------------ read and format file 1 ------------------------------------  #
 filename = r'sensor_joined.xlsx'
@@ -97,7 +103,7 @@ xxx.columns = ['_'.join(col).strip() for col in xxx.columns.values]
 
 # Do the same for the pipes
 # make an empty pipes df and concat with previous df
-pipes = ['xx_tk_mp', 'xx_mp_cv', 'xx_cv_wd', 'xx_wd_wc', 'xx_wc_cd', 'xx_cd_cr']
+pipes = ['mp_out', 'cv_in']
 pipes = ['start_' + i for i in pipes] + ['finish_' + i for i in pipes] + ['device_number_' + i for i in pipes]
 
 pipes = pd.DataFrame(columns=pipes,
@@ -108,15 +114,28 @@ pipes[:] = np.nan
 xxx = pd.concat([xxx, pipes], axis=1).reset_index()
 
 # Set the start and finish times for each pipe by the logic in the 'mapper' file
-for _, r in mapper.iterrows():
+for _, r in time_mapper.iterrows():
     xxx[r['to']] = xxx[r['from']]
+
+
+# Set line numbers
+for _, r in line_mapper.iterrows():
+    line_list = r['device_number']
+
+    device_columns = r['col_a']
+    line_column = r['col_b']
+
+    cond = xxx[r['col_a']].isin(line_list)
+    xxx[line_column][cond] = r['line_number']
+
 
 # Convert back to the long form
 stubnames = ["device_number", "start", "finish"]
 xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='\D+').reset_index()
 
-
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 
 merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
+
+
