@@ -40,6 +40,9 @@ a = pd.read_excel(io=fullpath,
 
 a['device_number'] = pd.to_numeric(a['device_number'], errors='coerce')
 
+cond = a['device_kind']=='xx'
+a['device_kind'][cond] = a['op_area_name'][cond]+a['op_area_number'][cond].astype(str)+'xx'
+
 # ------------------------------------ read and format file 2 ------------------------------------  #
 # Read data
 filename = r'tables_cottage_stages.csv'
@@ -103,7 +106,7 @@ xxx.columns = ['_'.join(col).strip() for col in xxx.columns.values]
 
 # Do the same for the pipes
 # make an empty pipes df and concat with previous df
-pipes = ['mp_out', 'cv_in']
+pipes = ['cc1xx','ps1xx']
 pipes = ['start_' + i for i in pipes] + ['finish_' + i for i in pipes] + ['device_number_' + i for i in pipes]
 
 pipes = pd.DataFrame(columns=pipes,
@@ -131,10 +134,10 @@ for _, r in line_mapper.iterrows():
 
 # Convert back to the long form
 stubnames = ["device_number", "start", "finish"]
-xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='\D+').reset_index()
-
+xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='.*').reset_index()
 
 # ------------------------------------ merge files ------------------------------------  #
+
 merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 
 merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
