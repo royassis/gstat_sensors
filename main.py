@@ -14,9 +14,9 @@ pd.set_option('mode.chained_assignment', None)
 os.system("taskkill /f /im " + 'EXCEL.exe')
 
 #################
-# Import data
+# Read files
 #################
-path = r"data/sensorsIN.xlsx"
+path = r"data/sensors_in.xlsx"
 out_path = r"data/sensors_out.xlsx"
 
 cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'desc']
