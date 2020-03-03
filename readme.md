@@ -21,12 +21,7 @@ Reads <b><u>`sensors_out.xlsx`</u></b>
 and <b><u>`sensors_desc.xlsx`</u></b>, joins them
 and creates <b><u>`sensors_out.xlsx`</u></b>
 
-5. add_the_lines_new.py -<br> 
+3. add_the_lines_new.py -<br> 
 Reads <b><u>`sensors_joined.xlsx`</u></b> and
 Reads <b><u>`tables_cottage_stages.csv`</u></b> 
-
-4. add_the_lines.py -<br> 
-Old file - replaced with <b><u>`add_the_lines_new.py`</u></b>
-
-
 
