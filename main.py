@@ -1,9 +1,8 @@
+# Imports and options
 import os
 import re
-
 import pandas as pd
 import numpy as np
-
 from functions import get_col_widths
 
 pd.set_option('mode.chained_assignment', None)
@@ -14,19 +13,26 @@ pd.set_option('mode.chained_assignment', None)
 os.system("taskkill /f /im " + 'EXCEL.exe')
 
 #################
-# Read files
+# Set in and out patchs
 #################
-path = r"data/sensors_in.xlsx"
-out_path = r"data/sensors_out.xlsx"
+base_dir = r'data'
+in_file = 'sensors_in.xlsx'
+in_path =  os.path.join(base_dir,in_file)
 
+out_file = 'sensors_out.xlsx'
+out_path = os.path.join(base_dir,out_file)
+
+#################
+# Read file
+#################
 cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'desc']
-df = pd.read_excel(path, sheet_name='sensors', usecols=cols, index_col='id')
+df = pd.read_excel(in_path, sheet_name='sensors', usecols=cols, index_col='id')
 
 df['sensor_tagname'] = df['sensor_tagname'].str.lower()
 df = df.drop_duplicates("sensor_tagname").replace('^$', np.nan, regex=True)
 
 #################
-# Breakdown tag with regex
+# Breakdown tag with regex to columns (op_area_name, op_area_number etc...)
 #################
 breakdown = df.sensor_tagname.str.extract(r"(?P<prefix>^.*?)"
                                           r"(?P<op_area_name>[A-z][A-z])"
@@ -39,7 +45,7 @@ breakdown = df.sensor_tagname.str.extract(r"(?P<prefix>^.*?)"
 df = df.merge(breakdown, right_index=True, left_index=True)
 
 #################
-# Get only elevent sensors
+# Get only elevent sensors (sensors in non relevent areas were dropped)
 #################
 regex_token_list = ['(CC\d\d(cd|cr|cv|wc|wd|xx))',
                     '(MR0[24])',
@@ -48,17 +54,21 @@ regex = r"|".join(regex_token_list)
 cond = (df['sensor_tagname'].str.contains(regex, flags=re.IGNORECASE, na=False))
 
 #################
-# Edit sensor_name
+# Edit sensor_name - somes small cahnges + create a generic sensor_name column
 #################
+# small cahnge 1
 prefix = df['prefix']
 prefix = prefix.replace(r'^d$', '', regex=True)
 
+# small cahnge 2
 suffix = df['suffix']
 suffix = suffix.replace("\s*jdc\s*", "", regex=True)
 
+# big cahnge - create a generic sensor_name column
 df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number', 'suffix'])
 df["sensor_name"] = (prefix + df['op_area_name'] + df['op_area_number'] + df['device_kind'] + suffix).str.upper()
 
+# after retrospective work some sensor names where manual changed, the changes are taken from a mapper file
 mapper = pd.read_csv(r'resources/sensor_name_mapper.csv', usecols = ['sensor_tagname', 'sensor_name_edited'])\
     .apply(lambda x: x.str.lower())\
     .set_index('sensor_tagname').iloc[:,0]
