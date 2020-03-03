@@ -138,8 +138,12 @@ xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind"
 
 # ------------------------------------ merge files ------------------------------------  #
 
-merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
-
+merged = a.merge(xxx, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
 
 
+# ------------------------------------ find sensors that did not match with batch ------------------------------------  #
+m2 = a.merge(xxx,how='left', left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
+cond = m2['batch_id'].isna()
+
+m2[cond]
