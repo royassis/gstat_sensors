@@ -118,7 +118,7 @@ for _, r in time_mapper.iterrows():
     xxx[r['to']] = xxx[r['from']]
 
 
-# Set line numbers
+# Set line numbers for each pipe by the logic in the 'mapper' file
 for _, r in line_mapper.iterrows():
     line_list = r['device_number']
 
@@ -132,6 +132,7 @@ for _, r in line_mapper.iterrows():
 # Convert back to the long form
 stubnames = ["device_number", "start", "finish"]
 xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='\D+').reset_index()
+
 
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
