@@ -6,9 +6,9 @@ import numpy as np
 base = r'data/'
 
 # ------------------------------------ read mapper ------------------------------------  #
-filename = r'another_mapper.xlsx'
+filename = r'another_mapper.csv'
 fullpath = 'resources/' + filename
-mapper = pd.read_excel(fullpath)
+mapper = pd.read_csv(fullpath)
 
 # ------------------------------------ read and format file 1 ------------------------------------  #
 filename = r'sensor_joined.xlsx'
