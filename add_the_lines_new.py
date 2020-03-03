@@ -84,7 +84,7 @@ b = b.groupby(['batch_id', 'device_kind']).agg({'device_number': 'max',
     .reset_index()
 
 # --------------------------------------------------------  #
-# Pivot table by batch number, each line would thus contain one batch, and each row a diff device_kind + start
+# Pivot table by batch number, each line would thus contain one batch, and each column a diff device_kind + start
 # and finish columns
 # --------------------------------------------------------  #
 xxx = b.pivot_table(index='batch_id',
@@ -96,6 +96,7 @@ xxx = b.pivot_table(index='batch_id',
 xxx.columns = ['_'.join(col).strip() for col in xxx.columns.values]
 
 # Do the same for the pipes
+# make an empty pipes df and concat with previous df
 pipes = ['xx_tk_mp', 'xx_mp_cv', 'xx_cv_wd', 'xx_wd_wc', 'xx_wc_cd', 'xx_cd_cr']
 pipes = ['start_' + i for i in pipes] + ['finish_' + i for i in pipes] + ['device_number_' + i for i in pipes]
 
@@ -106,13 +107,14 @@ pipes[:] = np.nan
 
 xxx = pd.concat([xxx, pipes], axis=1).reset_index()
 
-# Set the start and finish times for each pipe by the methodology in the 'mapper' file
+# Set the start and finish times for each pipe by the logic in the 'mapper' file
 for _, r in mapper.iterrows():
     xxx[r['to']] = xxx[r['from']]
 
 # Convert back to the long form
 stubnames = ["device_number", "start", "finish"]
 xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='\D+').reset_index()
+
 
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(b, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
