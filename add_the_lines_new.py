@@ -1,10 +1,13 @@
+# Imports and options
 import pandas as pd
 import numpy as np
 import os
 pd.options.display.width = 0
 
+# Set base dirs
 mapper_base = r'resources/'
 base = r'data/'
+
 # ------------------------------------ read time_mapper ------------------------------------  #
 filename = r'time_mapper.csv'
 fullpath = mapper_base + filename
@@ -17,6 +20,7 @@ line_mapper = pd.read_csv(fullpath)
 line_mapper = line_mapper.assign(device_number=line_mapper['device_number'].str.split(','))
 
 # ------------------------------------ read and format file 1 ------------------------------------  #
+# Read data
 filename = r'sensor_joined.xlsx'
 fullpath = base + filename
 
@@ -38,8 +42,10 @@ a = pd.read_excel(io=fullpath,
                   dtypes=dtypes) \
     .rename({'id': 'sensor_id'}, axis=1)
 
+# Coerce non numerics from columns
 a['device_number'] = pd.to_numeric(a['device_number'], errors='coerce')
 
+# Concat xx(device_kind) to op_area_name and number
 cond = a['device_kind']=='xx'
 a['device_kind'][cond] = a['op_area_name'][cond]+a['op_area_number'][cond].astype(str)+'xx'
 
