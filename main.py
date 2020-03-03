@@ -17,7 +17,7 @@ os.system("taskkill /f /im " + 'EXCEL.exe')
 # Import data
 #################
 path = r"data/sensorsIN.xlsx"
-out_path = r"data/sensorsOUT.xlsx"
+out_path = r"data/sensors_out.xlsx"
 
 cols = ['id', 'lVarId', 'sensor_tagname', 'HMI', 'desc']
 df = pd.read_excel(path, sheet_name='sensors', usecols=cols, index_col='id')
@@ -59,9 +59,11 @@ suffix = suffix.replace("\s*jdc\s*", "", regex=True)
 df = df[cond].sort_values(['HMI', 'op_area_name', 'device_kind', 'device_number', 'suffix'])
 df["sensor_name"] = (prefix + df['op_area_name'] + df['op_area_number'] + df['device_kind'] + suffix).str.upper()
 
-mapper = pd.read_csv(r'/resources/sensor_name_mapper.csv', usecols = ['sensor_tagname', 'sensor_name_edited'])\
+mapper = pd.read_csv(r'resources/sensor_name_mapper.csv', usecols = ['sensor_tagname', 'sensor_name_edited'])\
     .apply(lambda x: x.str.lower())\
     .set_index('sensor_tagname').iloc[:,0]
+
+mapper[mapper.isna()] = mapper[mapper.isna()].index.to_list()
 
 df["sensor_name_edited"] = df['sensor_tagname'].replace(mapper)
 

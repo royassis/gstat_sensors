@@ -12,7 +12,7 @@ def main ():
 
     l = [
         ['lines',r'C:\Users\User\PycharmProjects\gstat_sensors\data\lines.xlsx'],
-        ['sensor_data', r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensors_base.xlsx'],
+        ['sensor_data', r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensors_out.xlsx'],
         ['sensor_desc' , r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensor_desc.xlsx']
     ]
 
