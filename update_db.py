@@ -1,10 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
-import time
 import os
-
-
 
 def main ():
     db_name = 'sensors'
@@ -15,7 +12,6 @@ def main ():
         ['sensor_data', r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensors_out.xlsx'],
         ['sensor_desc' , r'C:\Users\User\PycharmProjects\gstat_sensors\data\sensor_desc.xlsx']
     ]
-
 
     # Push to db
     connstr = 'mssql+pyodbc://DESKTOP-TL42QJI\SQLEXPRESS/{}?driver=SQL+Server+Native+Client+11.0'.format(db_name)
@@ -36,10 +32,3 @@ def main ():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
