@@ -144,10 +144,11 @@ xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind"
 # ------------------------------------ merge files ------------------------------------  #
 merged = a.merge(xxx, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
+merged = merged.drop(['sensor_id','out_pipes','in_pipes','index'], axis = 1)
 
 filename = r'batches_out.csv'
 fullpath = os.path.join(base, filename)
-merged.to_csv(fullpath, index_label = 'id')
+merged.to_csv(path_or_buf= fullpath)
 
 # ----------------------------------- find sensors that did not match with batch -----------------------------------  #
 m2 = a.merge(xxx, how='left', left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
