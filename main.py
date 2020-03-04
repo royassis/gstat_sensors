@@ -19,7 +19,7 @@ base_dir = r'data'
 in_file = 'sensors_in.xlsx'
 in_path =  os.path.join(base_dir,in_file)
 
-out_file = 'sensors_out.xlsx'
+out_file = 'sensors_out.csv'
 out_path = os.path.join(base_dir,out_file)
 
 #################
