@@ -143,7 +143,6 @@ stubnames = ["device_number", "start", "finish"]
 xxx = pd.wide_to_long(df=xxx, stubnames=stubnames, i="batch_id", j="device_kind", sep='_', suffix='.*').reset_index()
 
 # ------------------------------------ merge files ------------------------------------  #
-
 merged = a.merge(xxx, left_on=['device_kind', 'device_number'], right_on=['device_kind', 'device_number'])
 merged = merged.sort_values(['batch_id', 'device_kind'], ascending=[True, True]).reset_index()
 
